@@ -1,0 +1,72 @@
+{
+    "description": "S2ML specification for nlrm generic metrics",
+    "s2ml": [
+      {
+        "name": "nlrm_metrics_pct",
+        "description": "generic nlrm metric percentage",
+        "metrics": [
+          "nlrm_utilization_pct"
+        ],
+        "labels": [
+          "timestamp",
+          "network_domain",
+          "resource",
+          "qualifier",
+          "device_type",
+          "pnf_name",
+          "service_type",
+          "city",
+          "state",
+          "latitude",
+          "longitude"
+        ],
+        "model": {
+          "pipeline": "fixed",
+          "low_threshold": 0.1,
+          "high_threshold": 60
+        },
+        "view": {
+          "dimension_1": "resource",
+          "dimension_2": "qualifier",
+          "units": "percentage",
+          "map": {
+            "countries": [
+              "us"
+            ],
+            "geo_codes": {
+              "lat": "latitude",
+              "lng": "longitude"
+            },
+            "color": "nlrm_utilization_pct_color"
+          }
+        }
+      },
+      {
+        "name": "nlrm_metrics_cnt",
+        "description": "generic nlrm metric counts",
+        "metrics": [
+          "nlrm_utilization_cnt"
+        ],
+        "labels": [
+          "timestamp",
+          "network_domain",
+          "resource",
+          "qualifier",
+          "device_type",
+          "pnf_name",
+          "service_type",
+          "city",
+          "state",
+          "latitude",
+          "longitude"
+        ],
+        "model": "None",
+        "view": {
+          "dimension_1": "resource",
+          "dimension_2": "qualifier",
+          "units": "count"
+        }
+      }
+    ]
+  }
+   
