@@ -31,6 +31,30 @@ class Validate_it_man:
             print("\n",i)
         
         print("\n")
+
+    def s2ml(self):
+        info_logs=[]
+        error_logs=[]
+        explanation_logs=[]
+        f=open("/Users/nitinsaimajji/Desktop/untitled folder/PROJECT-24/test_s2ml.json","r")
+        hey=json.loads(f.read())
+        if(['description','s2ml'] != list(hey.keys())):
+            if('s2ml' not in list(hey.keys())):
+                error_logs.append("ERROR: missed either S2ML: ")
+            else:
+                error_logs.append("ERROR: missed description")
+        
+        info_logs.append(f"INFO: I see {len(list(hey['s2ml']))} metrics/blocks are being exported to S2AP")
+        validate_keys=['name','description','metrics','labels','model','view']
+        for i in list(hey['s2ml']):
+            for j in i.keys():
+                if(j not in validate_keys):
+                    error_logs.append(f"ERROR: missing/spelling mistake in the key: '{j}' , in s2ml block having name: {i['name']}")
+                    explanation_logs.append(f"FIX: use either of these to verify your spelling  {validate_keys}")
+
+        info_logs.extend(error_logs)
+        info_logs.extend(explanation_logs)
+        return info_logs
             
     def spec(self,i_need="all"):
         ## yaml_to_json converter
@@ -65,7 +89,7 @@ class Validate_it_man:
 
     def extract_check(self,gotcha):
         pass
-    
+
     def export_checks(self,gotcha):
         pass
 
@@ -161,5 +185,6 @@ class Validate_it_man:
 
 
 v=Validate_it_man()
-report=v.spec()
+# report=v.spec()
+report=v.s2ml()
 v.pretty_print(report)
