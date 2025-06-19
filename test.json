@@ -1,0 +1,191 @@
+{
+    "__nlrm_metrics_ingest__": {
+      "metastore": {
+        "nlrm_device_inventory": {
+          "source": {
+            "type": "mongo",
+            "params": {
+              "database": "selector",
+              "table": "nlrm_device_inventory"
+            },
+            "refresh_secs": 120,
+            "schema": [
+              "device",
+              "city",
+              "country",
+              "device_subtype",
+              "device_type",
+              "latitude",
+              "longitude",
+              "network_domain",
+              "service_type",
+              "state"
+            ]
+          }
+        }
+      },
+      "data_elements": {
+        "nlrm_metrics_data": {
+          "load": {
+            "operation": "get",
+            "api": "UDC.data_ingest.FileIngest",
+            "parameters": [
+              {
+                "name": "file_dir",
+                "value": "/data1/nlrm-data1"
+              },
+              {
+                "name": "filename_prefix",
+                "value": "nlrm_utilization_pct"
+              },
+              {
+                "name": "filename_suffix",
+                "value": "gz"
+              },
+              {
+                "name": "file_age_in_mins",
+                "value": 1440
+              },
+              {
+                "name": "data_description",
+                "value": "nlrm_metrics_data"
+              }
+            ],
+            "reports": {
+              "report": {
+                "source": "report"
+              }
+            }
+          },
+          "extract": {
+            "nlrm_metrics": {
+              "joins": {
+                "pnf_to_device": {
+                  "metastore": {
+                    "source": {
+                      "type": "mongo",
+                      "params": {
+                        "database": "selector",
+                        "table": "nlrm_device_inventory"
+                      },
+                      "refresh_secs": 120,
+                      "schema": [
+                        "device",
+                        "city",
+                        "country",
+                        "device_subtype",
+                        "device_type",
+                        "latitude",
+                        "longitude",
+                        "network_domain",
+                        "service_type",
+                        "state"
+                      ]
+                    }
+                  },
+                  "left": {
+                    "keys": [
+                      {
+                        "name": "pnf_name",
+                        "source": "nlrm_metrics_data.reports.pnf_name"
+                      }
+                    ]
+                  },
+                  "right": {
+                    "keys": [
+                      "device"
+                    ]
+                  },
+                  "select": [
+                    "city",
+                    "country",
+                    "device_subtype",
+                    "device_type",
+                    "latitude",
+                    "longitude",
+                    "network_domain",
+                    "service_type",
+                    "state"
+                  ]
+                }
+              },
+              "labels": {
+                "resource": {
+                  "source": "nlrm_metrics_data.reports.resource"
+                },
+                "qualifier": {
+                  "source": "nlrm_metrics_data.reports.qualifier"
+                },
+                "pnf_name": {
+                  "source": "nlrm_metrics_data.reports.pnf_name"
+                },
+                "network_domain": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.network_domain"
+                },
+                "device_type": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.device_type"
+                },
+                "service_type": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.service_type"
+                },
+                "city": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.city"
+                },
+                "state": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.state"
+                },
+                "country": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.country"
+                },
+                "latitude": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.latitude"
+                },
+                "longitude": {
+                  "source": "nlrm_metrics_data.extract.nlrm_metrics.joins.pnf_to_device.longitude"
+                }
+              },
+              "metrics": {
+                "nlrm_utilization_pct": {
+                  "source": "nlrm_metrics_data.reports.percentage"
+                },
+                "nlrm_utilization_cnt": {
+                  "source": "nlrm_metrics_data.reports.count"
+                }
+              },
+              "timestamp": {
+                "timestamp": {
+                  "source": "udf_timestamp(nlrm_metrics_data.reports.timestamp)"
+                }
+              }
+            }
+          },
+          "export": {
+            "prometheus_remote_write": {
+              "sources": [
+                "nlrm_metrics_data.extract.nlrm_metrics"
+              ]
+            }
+          }
+        }
+      },
+      "workflows": {
+        "event_export": {
+          "params": {
+          },
+          "pipelines": {
+            "nlrm_metrics_data_ingest": [
+              {
+                "job": "nlrm_metrics_data.load"
+              },
+              {
+                "job": "nlrm_metrics_data.extract"
+              },
+              {
+                "job": "nlrm_metrics_data.export.don't_export"
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
