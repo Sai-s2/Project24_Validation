@@ -162,7 +162,7 @@
           "export": {
             "prometheus_remote_write": {
               "sources": [
-                "nlrm_metrics_data.extract.nlrm_metrics"
+                "nlrm_metrics_data.extarct"
               ]
             }
           }

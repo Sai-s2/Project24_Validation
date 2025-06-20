@@ -15,7 +15,7 @@ class Validate_it_man:
         True is set if error is found:
 
         """
-        print(report)
+
         if(report['export_section'][0][1]==True):
             validation_report.append(['export_section',report['export_section']])
         else:
@@ -62,125 +62,47 @@ class Validate_it_man:
         ## end of converter
 
         f=open("/Users/nitinsaimajji/Desktop/untitled folder/PROJECT-24/test.json","r")
-        source_data=json.loads(f.read())
-        final_report={'load_section':[],'extract_section':[],'export_section':[]}
+        gotcha=json.loads(f.read())
+        report={'load_section':[],'extract_section':[],'export_section':[]}
 
         # ## validate load section:
-        # report['load_section'].append(self.load_checks(source_data))
+        # report['load_section'].append(self.load_checks(gotcha))
 
 
         # ## validate extract section:
-        # report['export_section'].append(self.export_checks(source_data))
+        # report['extract_section'].append(self.extract_checks(gotcha))
 
 
         ## validate export section:
-        # report,error_logs,explanation = self.export_checks(source_data)
-        # if(i_need=="report"):
-        #     final_report['export_section'].append(report)
-        #     return final_report
-        # elif(i_need=="error_logs"):
-        #     return error_logs
-        # elif(i_need=="explanation"):
-        #     return explanation
-        # elif(i_need=="all"):
-        #     error_logs.extend(explanation)
-        #     return error_logs
-        
-        # ## validate workflow section:
-        # report,error_logs,explanation = self.workflow_checks(source_data)
-        # if(i_need=="report"):
-        #     report['export_section'].append(report)
-        #     return report
-        # elif(i_need=="error_logs"):
-        #     return error_logs
-        # elif(i_need=="explanation"):
-        #     return explanation
-        # elif(i_need=="all"):
-        #     error_logs.extend(explanation)
-        #     return error_logs
+        report,error_logs,explanation = self.workflow_checks(gotcha)
+        if(i_need=="report"):
+            report['export_section'].append(report)
+            return report
+        elif(i_need=="error_logs"):
+            return error_logs
+        elif(i_need=="explanation"):
+            return explanation
+        elif(i_need=="all"):
+            error_logs.extend(explanation)
+            return error_logs
 
-                                                                  ## dict_keys(['metastore', 'data_elements', 'workflows'])
 
-    def data_elemenst_checkin(self,source_data,get_data_for):
-        error_logs=[]
-        explanation=[]
-        data_elements_name=str(list(source_data.keys())[0])
-        print("worker_name : ",data_elements_name)
-        print("source_data[worker_name].keys() :",source_data[data_elements_name].keys())
-        if 'data_elements' in source_data[data_elements_name].keys():
-            data_elements_export_name='data_elements' 
-            data_elements_export=source_data[data_elements_name][data_elements_export_name]
-            # print("workflow_export_name :",data_elements_export_name) ## event_export
-            # print("workflow_export :", data_elements_export.keys()) ## dict(['event_export'])
-
-            event_export_name=str(list(data_elements_export.keys())[0])
-            ## assuming only 1 workflow
-            event_export=data_elements_export[event_export_name]
-
-            if(len(list(event_export.keys()))<3):
-                if('load' not in list(event_export.keys())):
-                    error_logs.append(("LOAD SECTION is missing"))
-                if('extract' not in list(event_export.keys())):
-                    error_logs.append(("EXTARCT SECTION is missing"))
-                if('export' not in list(event_export.keys())):
-                    error_logs.append(("EXPORT SECTION is missing"))
-
-            if(get_data_for in list(event_export.keys())):
-                return [event_export[get_data_for],error_logs]
-            else:
-                return [[],error_logs]
-
-    def load_check(self,source_data):
+    def extract_check(self,gotcha):
         pass
 
-    def extract_check(self,source_data):
+    def export_checks(self,gotcha):
         pass
 
-    def export_checks(self,source_data):
-        explanation=[]
-        report=[]
-        event_export,error_logs=self.data_elemenst_checkin(source_data,'export')
-        if(len(event_export)==0):
-            return []
-        print(event_export.keys())
-        export_name=str(list(event_export.keys())[0]) ## nlrm_metrics_data_ingest
-        print("export_name: ",export_name)   ## prometheus_remote_write
-        export_name_source=event_export[export_name]
-        print("export_name_source: ",export_name_source)
-        
-        if(list(export_name_source.keys())[0]=='sources'):
-            source_list=export_name_source['sources']
-            
-            for i in source_list:
-                print("source_list: ",i.split("."))
-                if(len(i.split("."))<3):
-                    error_logs.append(("value after EXTRACT part is missing"))
-                elif(len(i.split("."))==3 and i.split(".")[-2] != "extract"):
-                    error_logs.append((f"'{i.split(".")[-2]}' is either wrong or having a spelling mistake please check!"))
-                    explanation.append("The following is valid: 'extract' ")
-        else:
-            error_logs.append((f"Some mistake in {list(export_name_source.keys())[0]} name/spelling "))
-
-        report.append(error_logs)
-        if(len(error_logs)>0):
-            report.append(True)
-        else:
-            report.append(False) 
-
-        return [report,error_logs,explanation]
-
-
-
-    def workflow_checks(self,source_data):
+    def workflow_checks(self,gotcha):
         error_logs=[]
         explanation=[]
         report=[]
-        worker_name=str(list(source_data.keys())[0])
+        worker_name=str(list(gotcha.keys())[0])
         # print("worker_name : ",worker_name)
-        # print("source_data[worker_name].keys() :",source_data[worker_name].keys())
-        if 'workflows' in source_data[worker_name].keys():
+        # print("gotcha[worker_name].keys() :",gotcha[worker_name].keys())
+        if 'workflows' in gotcha[worker_name].keys():
             workflow_export_name='workflows' 
-            workflow_export=source_data[worker_name][workflow_export_name]
+            workflow_export=gotcha[worker_name][workflow_export_name]
             # print("workflow_export_name :",workflow_export_name) ## event_export
             # print("workflow_export :", workflow_export.keys()) ## dict(['event_export'])
 
@@ -254,8 +176,15 @@ class Validate_it_man:
         return [report,error_logs,explanation]
 
 
+    def extract_chunks(self,chunk):
+        pass
+
+    def load_chunks(self,chunk):
+        pass
+
+
 
 v=Validate_it_man()
-report=v.spec(i_need="report")
-# report=v.s2ml()
-v.pretty_print(v.print_report(report))
+# report=v.spec()
+report=v.s2ml()
+v.pretty_print(report)
